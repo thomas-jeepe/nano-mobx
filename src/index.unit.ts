@@ -1,7 +1,4 @@
-import { Observable } from 'rxjs/Observable'
-import 'rxjs/add/observable/of'
-import { Subject } from 'rxjs/Subject'
-import { ReplaySubject } from 'rxjs/ReplaySubject'
+import { Observable, Subject, ReplaySubject } from 'rxjs'
 // the core
 import {
   state,
@@ -55,6 +52,10 @@ describe('mobx', () => {
     expect(s.hi).toBe(true)
     expect(s.b).toBe(false)
     expect(r.observing.size).toBe(2)
+  })
+
+  it('should create an array that Array.isArray is true', () => {
+    expect(Array.isArray(toState([]))).toBe(true)
   })
 
   it('should be able to update the state using an action', () => {
@@ -319,7 +320,8 @@ describe('mobx', () => {
 
   it('should correctly handle nested state values', () => {
     class Blah {
-      @state bleh: { arr: number[], prop: string, meh: { hey: boolean } } = {
+      @state
+      bleh: { arr: number[]; prop: string; meh: { hey: boolean } } = {
         arr: [0],
         prop: 'hi',
         meh: { hey: true }

@@ -1,0 +1,52 @@
+{
+  "rules": {
+    "no-bitwise": true,
+    "class-name": true,
+    "eofline": true,
+    "no-trailing-whitespace": true,
+    "use-isnan": true,
+    "no-reference": true,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "member-ordering": [
+      true,
+      {
+        "order": "fields-first"
+      }
+    ],
+    "no-empty": true,
+    "no-duplicate-variable": true,
+    "no-inferrable-types": true,
+    "no-unnecessary-type-assertion": true,
+    "radix": true,
+    "jsdoc-format": true,
+    "new-parens": true,
+    "interface-name": [
+      true,
+      "always-prefix"
+    ],
+    "no-angle-bracket-type-assertion": true,
+    "object-literal-key-quotes": [
+      true,
+      "as-needed"
+    ],
+    "no-consecutive-blank-lines": [
+      true
+    ],
+    "one-variable-per-declaration": [
+      true
+    ],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "allow-pascal-case",
+      "check-format"
+    ],
+    "no-var-keyword": true
+  }
+}

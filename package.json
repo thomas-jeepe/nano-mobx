@@ -1,0 +1,37 @@
+{
+  "name": "nano-mobx",
+  "version": "0.0.1",
+  "main": "index.js",
+  "repository": "https://github.com/thomas-jeepe/nano-mobx.git",
+  "author": "penguinsoccer <penguinsoccer@outlook.com>",
+  "license": "MIT",
+  "dependencies": {
+    "rxjs": "^6.0.0-alpha.0",
+    "typescript": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^19.2.4",
+    "jest": "^20.0.4",
+    "prettier": "^1.4.4",
+    "ts-jest": "^20.0.6",
+    "tslib": "^1.7.1"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testMatch": [
+      "**/__tests__/**/*.ts?(x)",
+      "**/?(*.)(unit|int).ts?(x)"
+    ]
+  },
+  "scripts": {
+    "test": "jest src",
+    "format": "prettier --parser typescript --no-semi --single-quote --write \"src/**/*.ts\""
+  }
+}

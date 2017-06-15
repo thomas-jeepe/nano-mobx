@@ -24,8 +24,8 @@ export interface IDependent {
  * Whether we are currently in an action
  */
 export const globals: {
-  runningDependent: IDependent | undefined,
-  pendingReactions: Set<IDependent>,
+  runningDependent: IDependent | undefined
+  pendingReactions: Set<IDependent>
   inAction: boolean
 } = {
   runningDependent: undefined,
