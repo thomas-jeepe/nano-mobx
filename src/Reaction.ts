@@ -1,6 +1,7 @@
 import { globals, IDependable } from './globals'
 
 let reactionId = 0
+let runId = 1
 
 /**
  * A dependency upon computations or atoms. In a basic sense, a reaction is
@@ -12,8 +13,10 @@ let reactionId = 0
  * @class Reaction
  */
 export class Reaction {
-  observing: Set<IDependable> = new Set()
+  newObserving: IDependable[] = []
+  observing: IDependable[] = []
   name: string
+  runId: number
   id = reactionId++
   constructor(public cb: () => void, name?: string) {
     this.name = name
@@ -22,23 +25,34 @@ export class Reaction {
   }
 
   track(fn: () => void) {
-    const newDeps = new Set()
-    const oldDeps = this.observing
-    this.observing = newDeps
+    this.runId = runId++
     let lastReaction = globals.runningDependent
     globals.runningDependent = this
     fn()
     globals.runningDependent = lastReaction
-    oldDeps.forEach(a => {
-      if (newDeps.has(a)) {
-        return
+    const oldDeps = this.observing
+    const newDeps = (this.observing = this.newObserving)
+    this.newObserving = []
+    for (let i = 0; i < oldDeps.length; i++) {
+      const dep = oldDeps[i]
+      let found = false
+      for (let j = 0; j < newDeps.length; j++) {
+        if (dep === newDeps[j]) {
+          found = true
+          break
+        }
       }
-      a.observers.delete(this)
-    })
+      if (!found) {
+        dep.observers.delete(this)
+      }
+    }
+    for (let i = 0; i < newDeps.length; i++) {
+      newDeps[i].observers.add(this)
+    }
   }
 
   dispose() {
     this.observing.forEach(a => a.observers.delete(this))
-    this.observing.clear()
+    this.observing = []
   }
 }

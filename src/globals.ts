@@ -4,7 +4,9 @@ export interface IDependable {
 }
 
 export interface IDependent {
-  observing: Set<IDependable>
+  runId: number
+  observing: IDependable[]
+  newObserving: IDependable[]
   [name: string]: any
 }
 

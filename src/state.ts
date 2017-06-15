@@ -12,11 +12,12 @@ export function toState<T>(v: T): T {
 export const isState = Symbol('isState')
 
 export function objState<T>(obj: T) {
-  const atoms = new Map<any, Atom>()
-  if (Array.isArray(obj)) {
-    obj.forEach((v, i) => {
-      obj[i] = toState(v)
-      atoms.set(i, new Atom(`Array[${i}]`))
+  const atoms = new Map<string, Atom>()
+  const isArray = Array.isArray(obj)
+  if (isArray) {
+    ;(obj as any).forEach((v: any, i: number) => {
+      ;(obj as any)[i] = toState(v)
+      atoms.set(i.toString(), new Atom(`Array[${i}]`))
     })
     atoms.set('length', new Atom('Array.length'))
   } else {
@@ -25,9 +26,36 @@ export function objState<T>(obj: T) {
       atoms.set(key, new Atom(`Object.${key}`))
     })
   }
+  function iterCb(method: string, indexIdx: number) {
+    return function(cb: Function) {
+      if (method === 'reduce') {
+        ;(atoms.get('0') as Atom).view()
+      }
+      ;(atoms.get('length') as Atom).view()
+      return (obj as any)[method](function() {
+        ;(atoms.get(arguments[indexIdx].toString()) as Atom).view()
+        return cb.apply(null, arguments)
+      })
+    }
+  }
   function get(obj: any, name: any) {
     if (name === isState) {
       return true
+    }
+    if (isArray) {
+      switch (name) {
+        case 'forEach':
+        case 'map':
+        case 'filter':
+        case 'find':
+        case 'findIndex':
+        case 'some':
+        case 'every':
+          return iterCb(name, 1)
+        case 'reduce':
+        case 'reduceRight':
+          return iterCb(name, 2)
+      }
     }
     if (atoms.has(name)) {
       ;(atoms.get(name) as Atom).view()
@@ -43,10 +71,7 @@ export function objState<T>(obj: T) {
     if (atoms.has(name)) {
       ;(atoms.get(name) as Atom).change()
     } else {
-      atoms.set(
-        name,
-        new Atom(Array.isArray(obj) ? `Array[${name}]` : `Object.${name}`)
-      )
+      atoms.set(name, new Atom(isArray ? `Array[${name}]` : `Object.${name}`))
     }
     return true
   }

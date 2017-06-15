@@ -12,10 +12,11 @@ import { globals, IDependent } from './globals'
  * @export
  * @class Computation
  * @extends {Reaction}
- * @template T 
+ * @template T
  */
 export class Computation<T> extends Reaction {
   val: T
+  lastAccessedBy = 0
   observers: Set<IDependent> = new Set()
   name: string
 
@@ -29,17 +30,18 @@ export class Computation<T> extends Reaction {
           console.error(e)
         }
       })
-      this.observers.forEach(dep => {
-        dep.cb && dep.cb()
-      })
+      this.observers.forEach(dep => dep.cb())
     }, name ? `Computed@${name}` : `Computed`)
-    this.track(this.cb)
+    this.cb()
   }
 
   get = () => {
-    if (globals.runningDependent) {
-      this.observers.add(globals.runningDependent)
-      globals.runningDependent.observing.add(this)
+    const dep = globals.runningDependent
+    if (dep) {
+      if (dep.runId !== this.lastAccessedBy) {
+        this.lastAccessedBy = dep.runId
+        dep.newObserving.push(this)
+      }
     }
     return this.val
   };

@@ -16,7 +16,7 @@ describe('mobx', () => {
     const a = new Atom()
     const r = new Reaction(() => null)
     r.track(() => a.view())
-    expect(r.observing.size).toBe(1)
+    expect(r.observing.length).toBe(1)
     expect(a.observers.size).toBe(1)
   })
 
@@ -51,11 +51,33 @@ describe('mobx', () => {
     })
     expect(s.hi).toBe(true)
     expect(s.b).toBe(false)
-    expect(r.observing.size).toBe(2)
+    expect(r.observing.length).toBe(2)
   })
 
   it('should create an array that Array.isArray is true', () => {
     expect(Array.isArray(toState([]))).toBe(true)
+  })
+
+  it('should be able to forEach over a state array', () => {
+    let called: number[] = []
+    const arr = toState([1, 2, 3])
+    let r = autorun(() => {
+      arr.forEach(v => called.push(v))
+    })
+    expect(called).toEqual([1, 2, 3])
+    expect(r.observing.length).toBe(4)
+  })
+
+  it('should be able to reduce an array', () => {
+    let val = 0
+    const arr = toState([1, 2, 3])
+    let r = autorun(() => {
+      val = arr.reduce((acc, v) => acc + v)
+    })
+    expect(r.observing.length).toBe(4)
+    expect(val).toBe(6)
+    action(() => arr.push(4))()
+    expect(val).toBe(10)
   })
 
   it('should be able to update the state using an action', () => {
@@ -100,7 +122,6 @@ describe('mobx', () => {
       state.hi
       called++
     })
-    expect(called).toBe(1)
     action(() => (state.hi = false))()
     expect(called).toBe(2)
   })
@@ -180,22 +201,19 @@ describe('mobx', () => {
     }
     const store = new Store()
     const cb1 = jest.fn()
-    const cb2 = jest.fn()
     const r1 = new Reaction(cb1)
-    const r2 = new Reaction(cb2)
+    let arr: any
+    autorun(() => (arr = store.arr.map(x => 'hi' + x)))
     r1.track(() => store.arr.length)
-    r2.track(() => store.arr.map(_ => null))
     expect(store.arr.length).toBe(0)
     expect(cb1.mock.calls.length).toBe(0)
-    expect(cb2.mock.calls.length).toBe(0)
     store.push(1)
     expect(cb1.mock.calls.length).toBe(1)
-    expect(cb2.mock.calls.length).toBe(1)
+    expect(arr).toEqual(['hi1'])
     expect(store.arr).toEqual([1])
-    r2.track(() => store.arr.map(_ => null))
     store.set(0, 2)
     expect(cb1.mock.calls.length).toBe(1)
-    expect(cb2.mock.calls.length).toBe(2)
+    expect(arr).toEqual(['hi2'])
     expect(store.arr).toEqual([2])
   })
 
@@ -215,9 +233,9 @@ describe('mobx', () => {
         })
       })
     })
-    expect(r1.observing).toEqual(new Set([a1]))
-    expect(r2.observing).toEqual(new Set([a2]))
-    expect(r3.observing).toEqual(new Set([a3]))
+    expect(r1.observing).toEqual([a1])
+    expect(r2.observing).toEqual([a2])
+    expect(r3.observing).toEqual([a3])
   })
 
   it('should handle nested action', () => {
@@ -271,11 +289,11 @@ describe('mobx', () => {
     })
     expect(a1.observers.size).toBe(1)
     expect(a2.observers.size).toBe(1)
-    expect(r1.observing.size).toBe(2)
+    expect(r1.observing.length).toBe(2)
     r1.dispose()
     expect(a1.observers.size).toBe(0)
     expect(a2.observers.size).toBe(0)
-    expect(r1.observing.size).toBe(0)
+    expect(r1.observing.length).toBe(0)
   })
 
   it('should create a stream value', () => {
@@ -441,6 +459,18 @@ describe('mobx', () => {
     const x = new X()
     x.hi
     x.push('kek')
+  })
+
+  it('should not have duplicate dependencies when tracking', () => {
+    class Y {
+      @state test = false
+    }
+    const y = new Y()
+    const r = autorun(() => {
+      y.test
+      y.test
+    })
+    expect(r.observing.length).toBe(1)
   })
 
   it('should create a stream and correctly handle dependencies', () => {

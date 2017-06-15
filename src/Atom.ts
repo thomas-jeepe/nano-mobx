@@ -12,6 +12,7 @@ let atomId = 0
  */
 export class Atom {
   observers: Set<IDependent> = new Set()
+  lastAccessedBy = 0
   id = atomId++
   name: string
   constructor(name?: string) {
@@ -26,9 +27,12 @@ export class Atom {
   }
 
   view() {
-    if (globals.runningDependent) {
-      this.observers.add(globals.runningDependent)
-      globals.runningDependent.observing.add(this)
+    const dep = globals.runningDependent
+    if (dep) {
+      if (dep.runId !== this.lastAccessedBy) {
+        this.lastAccessedBy = dep.runId
+        dep.newObserving.push(this)
+      }
     }
   }
 }
